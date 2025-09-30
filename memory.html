@@ -256,6 +256,53 @@
         label {
             cursor: pointer;
         }
+        .guess-input {
+            padding: 10px 5px;
+            margin-top: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 18px;
+            text-align: center;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+            background-color: #ffffff;
+            width: 95px;
+        }
+        .guess-input.correct {
+            border-color: #28a745 !important;
+        }
+        .guess-input.hidden {
+            display: none;
+        }
+        .dark-mode .guess-input {
+            background-color: #555;
+            color: white;
+            border-color: #666;
+        }
+        .number-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .percentage-display {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+            margin-left: 20px;
+            padding: 10px 20px;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            background-color: #f0f8ff;
+            transition: all 0.3s;
+        }
+        .percentage-display.hidden {
+            display: none;
+        }
+        .dark-mode .percentage-display {
+            color: #87ceeb;
+            border-color: #5555ff;
+            background-color: #444;
+        }
         @media (max-width: 768px) {
             .controls {
                 flex-direction: column;
@@ -322,8 +369,11 @@
                     <label for="words-checkbox">Words</label>
                 </div>
             </div>
+            <button id="layout-toggle-button">▲</button>
             <button id="generate-button">Generate</button>
             <button id="mask-toggle-button">👁️</button>
+            <button id="guess-toggle-button">Guess</button>
+            <div id="percentage-display" class="percentage-display hidden">0% Correct</div>
         </div>
         <div id="number-display" class="number-display"></div>
     </div>
@@ -335,11 +385,16 @@
         const emojisCheckbox = document.getElementById('emojis-checkbox');
         const wordsCheckbox = document.getElementById('words-checkbox');
         const generateButton = document.getElementById('generate-button');
+        const layoutToggleButton = document.getElementById('layout-toggle-button');
         const maskToggleButton = document.getElementById('mask-toggle-button');
+        const guessToggleButton = document.getElementById('guess-toggle-button');
         const numberDisplay = document.getElementById('number-display');
         const darkModeToggle = document.getElementById('dark-mode-toggle');
+        const percentageDisplay = document.getElementById('percentage-display');
 
         let allMasked = false;
+        let currentLayout = 'triangle'; // 'triangle' or 'square'
+        let guessMode = 'guess'; // 'guess', 'clear', or 'hide'
 
         // Sample emoji and word arrays
         const emojis = ['😀', '😂', '🥰', '😎', '🤔', '😴', '🎉', '🎈', '🌟', '⭐', '🌈', '🔥', '💎', '🎯', '🚀', '🎪', '🎨', '🎭', '🎪', '🎲'];
@@ -425,6 +480,10 @@
 
             // Clear previous content
             numberDisplay.innerHTML = '';
+            
+            // Reset guess mode when generating new content
+            guessMode = 'guess';
+            guessToggleButton.textContent = 'Guess';
 
             // Check if at least one option is selected
             if (!useNumbers && !useEmojis && !useWords) {
@@ -444,7 +503,13 @@
                 const numbersDiv = document.createElement('div');
                 numbersDiv.className = 'numbers';
 
-                for (let i = 0; i < row; i++) {
+                // Determine number of items per row based on layout
+                const itemsInRow = currentLayout === 'square' ? rowCount : row;
+
+                for (let i = 0; i < itemsInRow; i++) {
+                    const containerDiv = document.createElement('div');
+                    containerDiv.className = 'number-container';
+
                     const numberSpan = document.createElement('span');
                     numberSpan.className = 'number';
 
@@ -478,11 +543,23 @@
                         this.classList.toggle('masked');
                     });
 
-                    numbersDiv.appendChild(numberSpan);
+                    containerDiv.appendChild(numberSpan);
+                    numbersDiv.appendChild(containerDiv);
                 }
 
                 rowDiv.appendChild(numbersDiv);
                 numberDisplay.appendChild(rowDiv);
+            }
+        }
+
+        // Toggle layout function
+        function toggleLayout() {
+            if (currentLayout === 'triangle') {
+                currentLayout = 'square';
+                layoutToggleButton.textContent = '◻️';
+            } else {
+                currentLayout = 'triangle';
+                layoutToggleButton.textContent = '▲';
             }
         }
 
@@ -504,9 +581,112 @@
             }
         }
 
+        // Create guess input boxes
+        function createGuessInputs() {
+            const allContainers = document.querySelectorAll('.number-container');
+            
+            allContainers.forEach(container => {
+                // Check if input already exists
+                if (container.querySelector('.guess-input')) {
+                    return;
+                }
+
+                const numberSpan = container.querySelector('.number');
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'guess-input';
+                input.placeholder = '';
+                
+                // Add input event listener to check for match and update percentage
+                input.addEventListener('input', function() {
+                    const originalText = numberSpan.textContent.trim();
+                    const inputText = this.value.trim();
+                    
+                    if (inputText === originalText) {
+                        this.classList.add('correct');
+                    } else {
+                        this.classList.remove('correct');
+                    }
+                    
+                    // Update percentage display
+                    updatePercentage();
+                });
+                
+                container.appendChild(input);
+            });
+        }
+
+        // Clear all guess inputs
+        function clearGuessInputs() {
+            const allInputs = document.querySelectorAll('.guess-input');
+            allInputs.forEach(input => {
+                input.value = '';
+                input.classList.remove('correct');
+            });
+        }
+
+        // Hide all guess inputs
+        function hideGuessInputs() {
+            const allInputs = document.querySelectorAll('.guess-input');
+            allInputs.forEach(input => {
+                input.classList.add('hidden');
+            });
+        }
+
+        // Show all guess inputs
+        function showGuessInputs() {
+            const allInputs = document.querySelectorAll('.guess-input');
+            allInputs.forEach(input => {
+                input.classList.remove('hidden');
+            });
+        }
+
+        // Calculate and update percentage
+        function updatePercentage() {
+            const allInputs = document.querySelectorAll('.guess-input');
+            const totalInputs = allInputs.length;
+            
+            if (totalInputs === 0) {
+                percentageDisplay.textContent = '0% Correct';
+                return;
+            }
+            
+            const correctInputs = document.querySelectorAll('.guess-input.correct').length;
+            const percentage = Math.round((correctInputs / totalInputs) * 100);
+            
+            percentageDisplay.textContent = `${percentage}% Correct`;
+        }
+
+        // Toggle guess mode function
+        function toggleGuessMode() {
+            if (guessMode === 'guess') {
+                // Create input boxes and show them
+                createGuessInputs();
+                showGuessInputs();
+                // Show percentage display and initialize it
+                percentageDisplay.classList.remove('hidden');
+                updatePercentage();
+                guessMode = 'clear';
+                guessToggleButton.textContent = 'Clear';
+            } else if (guessMode === 'clear') {
+                // Clear all inputs and hide percentage display
+                clearGuessInputs();
+                percentageDisplay.classList.add('hidden');
+                guessMode = 'hide';
+                guessToggleButton.textContent = 'Hide';
+            } else if (guessMode === 'hide') {
+                // Hide all inputs (percentage stays hidden)
+                hideGuessInputs();
+                guessMode = 'guess';
+                guessToggleButton.textContent = 'Guess';
+            }
+        }
+
         // Event listeners
+        layoutToggleButton.addEventListener('click', toggleLayout);
         generateButton.addEventListener('click', generateContent);
         maskToggleButton.addEventListener('click', toggleAllMasks);
+        guessToggleButton.addEventListener('click', toggleGuessMode);
         
         darkModeToggle.addEventListener('change', () => {
             document.body.classList.toggle('dark-mode');
