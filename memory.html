@@ -172,7 +172,7 @@
         .toggle-switch {
             position: absolute;
             top: 20px;
-            right: 20px;
+            right: 90px;
         }
         .toggle-switch input {
             display: none;
@@ -203,6 +203,30 @@
         .toggle-switch input:checked + label:after {
             left: calc(100% - 2px);
             transform: translateX(-100%);
+        }
+        .help-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .help-btn:hover {
+            background-color: #0056b3;
+        }
+        .dark-mode .help-btn {
+            background-color: #5555ff;
+        }
+        .dark-mode .help-btn:hover {
+            background-color: #4444dd;
         }
         .dark-mode {
             background-color: #333;
@@ -327,6 +351,7 @@
         <input type="checkbox" id="dark-mode-toggle">
         <label for="dark-mode-toggle"></label>
     </div>
+    <a href="help.html" class="help-btn" title="Help Documentation" aria-label="Help Documentation">?</a>
     <div class="hidden-title"><center><h1>Memory Training</h1></center></div>
     <div class="container">
         <h1>Memory Training</h1>
@@ -682,15 +707,81 @@
             }
         }
 
+        // Save settings to localStorage
+        function saveSettings() {
+            const settings = {
+                rowCount: rowCountSelect.value,
+                styled: styledCheckbox.checked,
+                numbers: numbersCheckbox.checked,
+                emojis: emojisCheckbox.checked,
+                words: wordsCheckbox.checked,
+                layout: currentLayout
+            };
+            localStorage.setItem('memoryTrainingSettings', JSON.stringify(settings));
+        }
+
+        // Load settings from localStorage
+        function loadSettings() {
+            const savedSettings = localStorage.getItem('memoryTrainingSettings');
+            if (savedSettings) {
+                try {
+                    const settings = JSON.parse(savedSettings);
+                    
+                    // Apply saved settings
+                    if (settings.rowCount) {
+                        rowCountSelect.value = settings.rowCount;
+                    }
+                    if (settings.styled !== undefined) {
+                        styledCheckbox.checked = settings.styled;
+                    }
+                    if (settings.numbers !== undefined) {
+                        numbersCheckbox.checked = settings.numbers;
+                    }
+                    if (settings.emojis !== undefined) {
+                        emojisCheckbox.checked = settings.emojis;
+                    }
+                    if (settings.words !== undefined) {
+                        wordsCheckbox.checked = settings.words;
+                    }
+                    if (settings.layout) {
+                        currentLayout = settings.layout;
+                        layoutToggleButton.textContent = currentLayout === 'triangle' ? '▲' : '◻️';
+                    }
+                } catch (error) {
+                    console.error('Error loading settings:', error);
+                }
+            }
+        }
+
         // Event listeners
-        layoutToggleButton.addEventListener('click', toggleLayout);
+        layoutToggleButton.addEventListener('click', () => {
+            toggleLayout();
+            saveSettings();
+        });
         generateButton.addEventListener('click', generateContent);
         maskToggleButton.addEventListener('click', toggleAllMasks);
         guessToggleButton.addEventListener('click', toggleGuessMode);
         
+        // Save settings when checkboxes or dropdown change
+        rowCountSelect.addEventListener('change', saveSettings);
+        styledCheckbox.addEventListener('change', saveSettings);
+        numbersCheckbox.addEventListener('change', saveSettings);
+        emojisCheckbox.addEventListener('change', saveSettings);
+        wordsCheckbox.addEventListener('change', saveSettings);
+        
         darkModeToggle.addEventListener('change', () => {
             document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
         });
+        
+        // Apply saved dark mode preference on page load
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            darkModeToggle.checked = true;
+        }
+
+        // Load saved settings on page load
+        loadSettings();
 
         // Don't generate initial content - wait for user to click Generate
     </script>
