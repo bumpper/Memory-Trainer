@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Memory Training - Random Number Generator</title>
+    
+    <!-- Enhanced Meta Tags -->
+    <meta name="Rating" content="general" />
+    <meta name="DESCRIPTION" content="Memory training tool with random number generation. Practice memorization with customizable rows and number sequences for cognitive enhancement." />
+    <meta name="KEYWORDS" content="memory training, memorization, random numbers, cognitive training, brain exercise, memory palace, mnemonics" />
+    <meta name="author" content="Radius.Center" />
+    <meta name="distribution" content="Global" />
+    <meta name="robots" content="FOLLOW,INDEX" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://radius.center/mnemonics/memory.html">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Memory Training - Random Number Generator">
+    <meta property="og:description" content="Practice memorization with customizable random number sequences for cognitive enhancement">
+    <meta property="og:url" content="https://radius.center/mnemonics/memory.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Radius.Center">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Memory Training - Random Number Generator">
+    <meta name="twitter:description" content="Enhance your memory with customizable random number sequences">
+    
+    <!-- Language and Hreflang -->
+    <meta name="language" content="en">
+    <link rel="alternate" hreflang="en" href="https://radius.center/mnemonics/memory.html">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Memory Training Tool",
+      "description": "Memory training application with random number generation for cognitive enhancement",
+      "url": "https://radius.center/mnemonics/memory.html",
+      "applicationCategory": "Education",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "creator": {
+        "@type": "Organization",
+        "name": "Radius.Center",
+        "url": "https://radius.center"
+      },
+      "keywords": ["memory training", "memorization", "cognitive training", "brain exercise", "mnemonics"],
+      "genre": ["Education", "Training", "Memory"]
+    }
+    </script>
+    
+    <link rel="SHORTCUT ICON" href="favicon.ico" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            transition: background-color 0.3s, color 0.3s;
+            margin: 0;
+            padding: 20px;
+            background-color: #ffffff;
+            color: #333333;
+        }
+        .hidden-title {
+            display: none;
+        }
+        .container {
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .checkbox-group {
+            display: flex;
+            gap: 15px;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .number-display {
+            margin: 30px auto;
+            width: 100%;
+            max-width: none;
+        }
+        .number-row {
+            margin: 15px 0;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            transition: all 0.3s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .row-label {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #666;
+        }
+        .numbers {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+        }
+        .number {
+            font-size: 24px;
+            font-weight: bold;
+            padding: 10px 15px;
+            background-color: #ffffff;
+            border: 2px solid #007bff;
+            border-radius: 6px;
+            color: #007bff;
+            min-width: 60px;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+        .number.masked {
+            background-color: #666 !important;
+            color: transparent !important;
+            user-select: none;
+            font-family: Arial !important;
+            font-weight: normal !important;
+            font-style: normal !important;
+            text-decoration: none !important;
+        }
+        .number.masked::after {
+            content: '●●●●';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #999 !important;
+            font-size: 16px;
+            letter-spacing: 2px;
+            font-family: Arial !important;
+            font-weight: normal !important;
+            font-style: normal !important;
+            text-decoration: none !important;
+        }
+        .dark-mode .number.masked {
+            background-color: #222 !important;
+        }
+        .dark-mode .number.masked::after {
+            color: #666 !important;
+        }
+        .toggle-switch {
+            position: absolute;
+            top: 20px;
+            right: 90px;
+        }
+        .toggle-switch input {
+            display: none;
+        }
+        .toggle-switch label {
+            cursor: pointer;
+            width: 50px;
+            height: 25px;
+            background: #ccc;
+            display: block;
+            border-radius: 25px;
+            position: relative;
+        }
+        .toggle-switch label:after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 21px;
+            height: 21px;
+            background: #fff;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+        .toggle-switch input:checked + label {
+            background: #5555ff;
+        }
+        .toggle-switch input:checked + label:after {
+            left: calc(100% - 2px);
+            transform: translateX(-100%);
+        }
+        .help-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .help-btn:hover {
+            background-color: #0056b3;
+        }
+        .dark-mode .help-btn {
+            background-color: #5555ff;
+        }
+        .dark-mode .help-btn:hover {
+            background-color: #4444dd;
+        }
+        .dark-mode {
+            background-color: #333;
+            color: white;
+        }
+        .dark-mode .number-row {
+            background-color: #444;
+            border-color: #666;
+        }
+        .dark-mode .number {
+            background-color: #555;
+            border-color: #007bff;
+            color: #87ceeb;
+        }
+        .dark-mode .row-label {
+            color: #ccc;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .dark-mode button {
+            background-color: #5555ff;
+        }
+        .dark-mode button:hover {
+            background-color: #4444dd;
+        }
+        select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .dark-mode select {
+            background-color: #555;
+            color: white;
+            border-color: #666;
+        }
+        input[type="checkbox"] {
+            margin-right: 5px;
+        }
+        label {
+            cursor: pointer;
+        }
+        .guess-input {
+            padding: 10px 5px;
+            margin-top: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 18px;
+            text-align: center;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+            background-color: #ffffff;
+            width: 95px;
+        }
+        .guess-input.correct {
+            border-color: #28a745 !important;
+        }
+        .guess-input.hidden {
+            display: none;
+        }
+        .dark-mode .guess-input {
+            background-color: #555;
+            color: white;
+            border-color: #666;
+        }
+        .number-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .percentage-display {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+            margin-left: 20px;
+            padding: 10px 20px;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            background-color: #f0f8ff;
+            transition: all 0.3s;
+        }
+        .percentage-display.hidden {
+            display: none;
+        }
+        .dark-mode .percentage-display {
+            color: #87ceeb;
+            border-color: #5555ff;
+            background-color: #444;
+        }
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .checkbox-group {
+                justify-content: center;
+            }
+            .numbers {
+                gap: 10px;
+            }
+            .number {
+                font-size: 20px;
+                padding: 8px 12px;
+                min-width: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="toggle-switch">
+        <input type="checkbox" id="dark-mode-toggle">
+        <label for="dark-mode-toggle"></label>
+    </div>
+    <a href="help.html" class="help-btn" title="Help Documentation" aria-label="Help Documentation">?</a>
+    <div class="hidden-title"><center><h1>Memory Training</h1></center></div>
+    <div class="container">
+        <h1>Memory Training</h1>
+        <div class="controls">
+            <div class="control-group">
+                <label for="row-count">Number of Rows:</label>
+                <select id="row-count">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3" selected>3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                    <option value="13">13</option>
+                    <option value="14">14</option>
+                    <option value="15">15</option>
+                </select>
+            </div>
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="styled-checkbox" checked>
+                    <label for="styled-checkbox">Styled</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="numbers-checkbox" checked>
+                    <label for="numbers-checkbox">Numbers</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="emojis-checkbox">
+                    <label for="emojis-checkbox">Emoji's</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="words-checkbox">
+                    <label for="words-checkbox">Words</label>
+                </div>
+            </div>
+            <button id="layout-toggle-button">▲</button>
+            <button id="generate-button">Generate</button>
+            <button id="mask-toggle-button">👁️</button>
+            <button id="guess-toggle-button">Guess</button>
+            <div id="percentage-display" class="percentage-display hidden">0% Correct</div>
+        </div>
+        <div id="number-display" class="number-display"></div>
+    </div>
+
+    <script>
+        const rowCountSelect = document.getElementById('row-count');
+        const styledCheckbox = document.getElementById('styled-checkbox');
+        const numbersCheckbox = document.getElementById('numbers-checkbox');
+        const emojisCheckbox = document.getElementById('emojis-checkbox');
+        const wordsCheckbox = document.getElementById('words-checkbox');
+        const generateButton = document.getElementById('generate-button');
+        const layoutToggleButton = document.getElementById('layout-toggle-button');
+        const maskToggleButton = document.getElementById('mask-toggle-button');
+        const guessToggleButton = document.getElementById('guess-toggle-button');
+        const numberDisplay = document.getElementById('number-display');
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        const percentageDisplay = document.getElementById('percentage-display');
+
+        let allMasked = false;
+        let currentLayout = 'triangle'; // 'triangle' or 'square'
+        let guessMode = 'guess'; // 'guess', 'clear', or 'hide'
+
+        // Sample emoji and word arrays
+        const emojis = ['😀', '😂', '🥰', '😎', '🤔', '😴', '🎉', '🎈', '🌟', '⭐', '🌈', '🔥', '💎', '🎯', '🚀', '🎪', '🎨', '🎭', '🎪', '🎲'];
+        const words = ['apple', 'brave', 'chair', 'dance', 'eagle', 'flame', 'grace', 'heart', 'image', 'jewel', 'knife', 'light', 'magic', 'night', 'ocean', 'peace', 'queen', 'river', 'storm', 'truth'];
+
+        // Top 20 web fonts
+        const webFonts = [
+            'Arial', 'Helvetica', 'Times New Roman', 'Georgia', 'Verdana', 
+            'Courier New', 'Trebuchet MS', 'Arial Black', 'Impact', 'Comic Sans MS',
+            'Palatino', 'Garamond', 'Bookman', 'Avant Garde', 'Tahoma',
+            'Geneva', 'Lucida Console', 'Lucida Sans Unicode', 'MS Sans Serif', 'MS Serif'
+        ];
+
+        // Random colors
+        const colors = [
+            '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', 
+            '#F7DC6F', '#BB8FCE', '#85C1E9', '#F8C471', '#82E0AA', '#F1948A', '#85C1E9',
+            '#D7BDE2', '#A3E4D7', '#F9E79F', '#FADBD8', '#D5DBDB', '#AED6F1'
+        ];
+
+        // Text emphasis styles
+        const emphasisStyles = ['normal', 'bold', 'italic', 'underline'];
+
+        function generateRandomNumber() {
+            return Math.floor(Math.random() * 10000);
+        }
+
+        function generateRandomEmoji() {
+            return emojis[Math.floor(Math.random() * emojis.length)];
+        }
+
+        function generateRandomWord() {
+            return words[Math.floor(Math.random() * words.length)];
+        }
+
+        function getRandomFont() {
+            return webFonts[Math.floor(Math.random() * webFonts.length)];
+        }
+
+        function getRandomColor() {
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        function getRandomEmphasis() {
+            return emphasisStyles[Math.floor(Math.random() * emphasisStyles.length)];
+        }
+
+        function applyRandomStyling(element) {
+            if (styledCheckbox.checked) {
+                const font = getRandomFont();
+                const color = getRandomColor();
+                const emphasis = getRandomEmphasis();
+
+                element.style.fontFamily = font;
+                element.style.color = color;
+                
+                // Reset all emphasis styles first
+                element.style.fontWeight = 'normal';
+                element.style.fontStyle = 'normal';
+                element.style.textDecoration = 'none';
+                
+                // Apply random emphasis
+                switch (emphasis) {
+                    case 'bold':
+                        element.style.fontWeight = 'bold';
+                        break;
+                    case 'italic':
+                        element.style.fontStyle = 'italic';
+                        break;
+                    case 'underline':
+                        element.style.textDecoration = 'underline';
+                        break;
+                    // 'normal' case - no additional styling needed
+                }
+            }
+        }
+
+        function generateContent() {
+            const rowCount = parseInt(rowCountSelect.value);
+            const useNumbers = numbersCheckbox.checked;
+            const useEmojis = emojisCheckbox.checked;
+            const useWords = wordsCheckbox.checked;
+
+            // Clear previous content
+            numberDisplay.innerHTML = '';
+            
+            // Reset guess mode when generating new content
+            guessMode = 'guess';
+            guessToggleButton.textContent = 'Guess';
+
+            // Check if at least one option is selected
+            if (!useNumbers && !useEmojis && !useWords) {
+                numberDisplay.innerHTML = '<p style="color: red;">Please select at least one option (Numbers, Emoji\'s, or Words).</p>';
+                return;
+            }
+
+            for (let row = 1; row <= rowCount; row++) {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'number-row';
+
+                const rowLabel = document.createElement('div');
+                rowLabel.className = 'row-label';
+                rowLabel.textContent = `Row ${row}:`;
+                rowDiv.appendChild(rowLabel);
+
+                const numbersDiv = document.createElement('div');
+                numbersDiv.className = 'numbers';
+
+                // Determine number of items per row based on layout
+                const itemsInRow = currentLayout === 'square' ? rowCount : row;
+
+                for (let i = 0; i < itemsInRow; i++) {
+                    const containerDiv = document.createElement('div');
+                    containerDiv.className = 'number-container';
+
+                    const numberSpan = document.createElement('span');
+                    numberSpan.className = 'number';
+
+                    // Determine what type of content to generate
+                    const availableTypes = [];
+                    if (useNumbers) availableTypes.push('number');
+                    if (useEmojis) availableTypes.push('emoji');
+                    if (useWords) availableTypes.push('word');
+
+                    const selectedType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+
+                    switch (selectedType) {
+                        case 'number':
+                            numberSpan.textContent = generateRandomNumber();
+                            break;
+                        case 'emoji':
+                            numberSpan.textContent = generateRandomEmoji();
+                            break;
+                        case 'word':
+                            numberSpan.textContent = generateRandomWord();
+                            break;
+                    }
+
+                    // Apply random styling if enabled and content is number or word (not emoji)
+                    if (selectedType !== 'emoji') {
+                        applyRandomStyling(numberSpan);
+                    }
+
+                    // Add click event for individual masking/unmasking
+                    numberSpan.addEventListener('click', function() {
+                        this.classList.toggle('masked');
+                    });
+
+                    containerDiv.appendChild(numberSpan);
+                    numbersDiv.appendChild(containerDiv);
+                }
+
+                rowDiv.appendChild(numbersDiv);
+                numberDisplay.appendChild(rowDiv);
+            }
+        }
+
+        // Toggle layout function
+        function toggleLayout() {
+            if (currentLayout === 'triangle') {
+                currentLayout = 'square';
+                layoutToggleButton.textContent = '◻️';
+            } else {
+                currentLayout = 'triangle';
+                layoutToggleButton.textContent = '▲';
+            }
+        }
+
+        // Toggle all masks function
+        function toggleAllMasks() {
+            allMasked = !allMasked;
+            const allNumbers = document.querySelectorAll('.number');
+            
+            if (allMasked) {
+                maskToggleButton.textContent = '🙈';
+                allNumbers.forEach(number => {
+                    number.classList.add('masked');
+                });
+            } else {
+                maskToggleButton.textContent = '👁️';
+                allNumbers.forEach(number => {
+                    number.classList.remove('masked');
+                });
+            }
+        }
+
+        // Create guess input boxes
+        function createGuessInputs() {
+            const allContainers = document.querySelectorAll('.number-container');
+            
+            allContainers.forEach(container => {
+                // Check if input already exists
+                if (container.querySelector('.guess-input')) {
+                    return;
+                }
+
+                const numberSpan = container.querySelector('.number');
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'guess-input';
+                input.placeholder = '';
+                
+                // Add input event listener to check for match and update percentage
+                input.addEventListener('input', function() {
+                    const originalText = numberSpan.textContent.trim();
+                    const inputText = this.value.trim();
+                    
+                    if (inputText === originalText) {
+                        this.classList.add('correct');
+                    } else {
+                        this.classList.remove('correct');
+                    }
+                    
+                    // Update percentage display
+                    updatePercentage();
+                });
+                
+                container.appendChild(input);
+            });
+        }
+
+        // Clear all guess inputs
+        function clearGuessInputs() {
+            const allInputs = document.querySelectorAll('.guess-input');
+            allInputs.forEach(input => {
+                input.value = '';
+                input.classList.remove('correct');
+            });
+        }
+
+        // Hide all guess inputs
+        function hideGuessInputs() {
+            const allInputs = document.querySelectorAll('.guess-input');
+            allInputs.forEach(input => {
+                input.classList.add('hidden');
+            });
+        }
+
+        // Show all guess inputs
+        function showGuessInputs() {
+            const allInputs = document.querySelectorAll('.guess-input');
+            allInputs.forEach(input => {
+                input.classList.remove('hidden');
+            });
+        }
+
+        // Calculate and update percentage
+        function updatePercentage() {
+            const allInputs = document.querySelectorAll('.guess-input');
+            const totalInputs = allInputs.length;
+            
+            if (totalInputs === 0) {
+                percentageDisplay.textContent = '0% Correct';
+                return;
+            }
+            
+            const correctInputs = document.querySelectorAll('.guess-input.correct').length;
+            const percentage = Math.round((correctInputs / totalInputs) * 100);
+            
+            percentageDisplay.textContent = `${percentage}% Correct`;
+        }
+
+        // Toggle guess mode function
+        function toggleGuessMode() {
+            if (guessMode === 'guess') {
+                // Create input boxes and show them
+                createGuessInputs();
+                showGuessInputs();
+                // Show percentage display and initialize it
+                percentageDisplay.classList.remove('hidden');
+                updatePercentage();
+                guessMode = 'clear';
+                guessToggleButton.textContent = 'Clear';
+            } else if (guessMode === 'clear') {
+                // Clear all inputs and hide percentage display
+                clearGuessInputs();
+                percentageDisplay.classList.add('hidden');
+                guessMode = 'hide';
+                guessToggleButton.textContent = 'Hide';
+            } else if (guessMode === 'hide') {
+                // Hide all inputs (percentage stays hidden)
+                hideGuessInputs();
+                guessMode = 'guess';
+                guessToggleButton.textContent = 'Guess';
+            }
+        }
+
+        // Save settings to localStorage
+        function saveSettings() {
+            const settings = {
+                rowCount: rowCountSelect.value,
+                styled: styledCheckbox.checked,
+                numbers: numbersCheckbox.checked,
+                emojis: emojisCheckbox.checked,
+                words: wordsCheckbox.checked,
+                layout: currentLayout
+            };
+            localStorage.setItem('memoryTrainingSettings', JSON.stringify(settings));
+        }
+
+        // Load settings from localStorage
+        function loadSettings() {
+            const savedSettings = localStorage.getItem('memoryTrainingSettings');
+            if (savedSettings) {
+                try {
+                    const settings = JSON.parse(savedSettings);
+                    
+                    // Apply saved settings
+                    if (settings.rowCount) {
+                        rowCountSelect.value = settings.rowCount;
+                    }
+                    if (settings.styled !== undefined) {
+                        styledCheckbox.checked = settings.styled;
+                    }
+                    if (settings.numbers !== undefined) {
+                        numbersCheckbox.checked = settings.numbers;
+                    }
+                    if (settings.emojis !== undefined) {
+                        emojisCheckbox.checked = settings.emojis;
+                    }
+                    if (settings.words !== undefined) {
+                        wordsCheckbox.checked = settings.words;
+                    }
+                    if (settings.layout) {
+                        currentLayout = settings.layout;
+                        layoutToggleButton.textContent = currentLayout === 'triangle' ? '▲' : '◻️';
+                    }
+                } catch (error) {
+                    console.error('Error loading settings:', error);
+                }
+            }
+        }
+
+        // Event listeners
+        layoutToggleButton.addEventListener('click', () => {
+            toggleLayout();
+            saveSettings();
+        });
+        generateButton.addEventListener('click', generateContent);
+        maskToggleButton.addEventListener('click', toggleAllMasks);
+        guessToggleButton.addEventListener('click', toggleGuessMode);
+        
+        // Save settings when checkboxes or dropdown change
+        rowCountSelect.addEventListener('change', saveSettings);
+        styledCheckbox.addEventListener('change', saveSettings);
+        numbersCheckbox.addEventListener('change', saveSettings);
+        emojisCheckbox.addEventListener('change', saveSettings);
+        wordsCheckbox.addEventListener('change', saveSettings);
+        
+        darkModeToggle.addEventListener('change', () => {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        });
+        
+        // Apply saved dark mode preference on page load
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            darkModeToggle.checked = true;
+        }
+
+        // Load saved settings on page load
+        loadSettings();
+
+        // Don't generate initial content - wait for user to click Generate
+    </script>
+</body>
+</html>
