@@ -327,6 +327,38 @@
             border-color: #5555ff;
             background-color: #444;
         }
+        .number-container.column-layout {
+            margin: 0 auto;
+            width: fit-content;
+        }
+        
+        .numbers.column-layout {
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+        
+        .number-row.column-layout {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            max-width: 300px;
+            margin: 15px auto;
+        }
+        
+        .number-row.column-layout .row-label {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .number-row.column-layout .number {
+            margin-bottom: 5px;
+            min-width: 80px;
+            justify-content: center;
+        }
+
         @media (max-width: 768px) {
             .controls {
                 flex-direction: column;
@@ -418,7 +450,7 @@
         const percentageDisplay = document.getElementById('percentage-display');
 
         let allMasked = false;
-        let currentLayout = 'triangle'; // 'triangle' or 'square'
+        let currentLayout = 'triangle'; // 'triangle', 'square', or 'column'
         let guessMode = 'guess'; // 'guess', 'clear', or 'hide'
 
         // Sample emoji and word arrays
@@ -518,7 +550,7 @@
 
             for (let row = 1; row <= rowCount; row++) {
                 const rowDiv = document.createElement('div');
-                rowDiv.className = 'number-row';
+                rowDiv.className = currentLayout === 'column' ? 'number-row column-layout' : 'number-row';
 
                 const rowLabel = document.createElement('div');
                 rowLabel.className = 'row-label';
@@ -526,14 +558,15 @@
                 rowDiv.appendChild(rowLabel);
 
                 const numbersDiv = document.createElement('div');
-                numbersDiv.className = 'numbers';
+                numbersDiv.className = currentLayout === 'column' ? 'numbers column-layout' : 'numbers';
 
                 // Determine number of items per row based on layout
-                const itemsInRow = currentLayout === 'square' ? rowCount : row;
+                const itemsInRow = currentLayout === 'square' ? rowCount : 
+                                  currentLayout === 'column' ? 1 : row;
 
                 for (let i = 0; i < itemsInRow; i++) {
                     const containerDiv = document.createElement('div');
-                    containerDiv.className = 'number-container';
+                    containerDiv.className = currentLayout === 'column' ? 'number-container column-layout' : 'number-container';
 
                     const numberSpan = document.createElement('span');
                     numberSpan.className = 'number';
@@ -582,6 +615,9 @@
             if (currentLayout === 'triangle') {
                 currentLayout = 'square';
                 layoutToggleButton.textContent = '◻️';
+            } else if (currentLayout === 'square') {
+                currentLayout = 'column';
+                layoutToggleButton.innerHTML = '<span style="color: white;">|</span>';
             } else {
                 currentLayout = 'triangle';
                 layoutToggleButton.textContent = '▲';
@@ -745,7 +781,13 @@
                     }
                     if (settings.layout) {
                         currentLayout = settings.layout;
-                        layoutToggleButton.textContent = currentLayout === 'triangle' ? '▲' : '◻️';
+                        if (currentLayout === 'triangle') {
+                            layoutToggleButton.textContent = '▲';
+                        } else if (currentLayout === 'square') {
+                            layoutToggleButton.textContent = '◻️';
+                        } else if (currentLayout === 'column') {
+                            layoutToggleButton.innerHTML = '<span style="color: white;">|</span>';
+                        }
                     }
                 } catch (error) {
                     console.error('Error loading settings:', error);
