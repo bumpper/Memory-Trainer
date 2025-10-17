@@ -114,6 +114,7 @@
             transition: all 0.3s;
             width: 100%;
             box-sizing: border-box;
+            overflow: visible;
         }
         .row-label {
             font-weight: bold;
@@ -125,7 +126,7 @@
             justify-content: center;
             gap: 15px;
             flex-wrap: nowrap;
-            overflow-x: auto;
+            overflow: visible;
         }
         .number {
             font-size: 24px;
@@ -288,12 +289,13 @@
             font-size: 18px;
             text-align: center;
             box-sizing: border-box;
-            transition: border-color 0.3s;
+            transition: border-color 0.3s, box-shadow 0.3s;
             background-color: #ffffff;
-            width: 95px;
+            min-width: 95px;
         }
         .guess-input.correct {
             border-color: #28a745 !important;
+            box-shadow: 0 0 10px #28a745, 0 0 20px rgba(40, 167, 69, 0.3), 0 0 30px rgba(40, 167, 69, 0.1) !important;
         }
         .guess-input.hidden {
             display: none;
@@ -307,6 +309,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            overflow: visible;
         }
         .percentage-display {
             font-size: 18px;
@@ -327,6 +330,119 @@
             border-color: #5555ff;
             background-color: #444;
         }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        
+        .dark-mode .modal-content {
+            background-color: #444;
+            color: white;
+        }
+        
+        .modal-drag-area {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 50px;
+            height: 50px;
+            cursor: move;
+            user-select: none;
+            z-index: 1;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            right: 15px;
+            top: 10px;
+            cursor: pointer;
+            z-index: 2;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        .dark-mode .close:hover {
+            color: #fff;
+        }
+        
+        .modal-header {
+            margin-bottom: 20px;
+            user-select: none;
+            position: relative;
+            pointer-events: none;
+        }
+        
+        .modal-header h2 {
+            margin-right: 40px;
+            cursor: default;
+        }
+        
+        .modal-buttons-top {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-checkboxes {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        
+        .custom-textarea {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            resize: vertical;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        .dark-mode .custom-textarea {
+            background-color: #555;
+            color: white;
+            border-color: #666;
+        }
+        
+        .modal-buttons {
+            margin-top: 20px;
+            text-align: center;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
         .number-container.column-layout {
             margin: 0 auto;
             width: fit-content;
@@ -344,7 +460,7 @@
             flex-direction: column;
             align-items: center;
             text-align: center;
-            max-width: 300px;
+            width: 100%;
             margin: 15px auto;
         }
         
@@ -427,12 +543,37 @@
                 </div>
             </div>
             <button id="layout-toggle-button">▲</button>
+            <button id="custom-button">Custom</button>
             <button id="generate-button">Generate</button>
             <button id="mask-toggle-button">👁️</button>
             <button id="guess-toggle-button">Guess</button>
             <div id="percentage-display" class="percentage-display hidden">0% Correct</div>
         </div>
         <div id="number-display" class="number-display"></div>
+    </div>
+
+    <!-- Custom Modal -->
+    <div id="custom-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-drag-area" id="modal-drag-area"></div>
+            <span class="close">&times;</span>
+            <div class="modal-header" id="modal-header">
+                <h2>Custom Memory Items</h2>
+            </div>
+            <div class="modal-buttons-top">
+                <button id="preload-button">Preload</button>
+                <button id="clear-button">Clear</button>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="randomize-checkbox">
+                    <label for="randomize-checkbox">Randomize</label>
+                </div>
+            </div>
+            <textarea id="custom-textarea" class="custom-textarea" placeholder="Enter each item on a new line...&#10;&#10;Example:&#10;apple&#10;banana&#10;cherry&#10;dog&#10;elephant"></textarea>
+            <div class="modal-buttons">
+                <button id="apply-custom">Apply</button>
+                <button id="cancel-custom">Cancel</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -442,16 +583,31 @@
         const emojisCheckbox = document.getElementById('emojis-checkbox');
         const wordsCheckbox = document.getElementById('words-checkbox');
         const generateButton = document.getElementById('generate-button');
+        const customButton = document.getElementById('custom-button');
         const layoutToggleButton = document.getElementById('layout-toggle-button');
         const maskToggleButton = document.getElementById('mask-toggle-button');
         const guessToggleButton = document.getElementById('guess-toggle-button');
         const numberDisplay = document.getElementById('number-display');
         const darkModeToggle = document.getElementById('dark-mode-toggle');
         const percentageDisplay = document.getElementById('percentage-display');
+        
+        // Custom modal elements
+        const customModal = document.getElementById('custom-modal');
+        const customTextarea = document.getElementById('custom-textarea');
+        const preloadButton = document.getElementById('preload-button');
+        const clearButton = document.getElementById('clear-button');
+        const randomizeCheckbox = document.getElementById('randomize-checkbox');
+        const applyCustomButton = document.getElementById('apply-custom');
+        const cancelCustomButton = document.getElementById('cancel-custom');
+        const closeModal = document.querySelector('.close');
+        const modalHeader = document.getElementById('modal-header');
+        const modalDragArea = document.getElementById('modal-drag-area');
 
         let allMasked = false;
         let currentLayout = 'triangle'; // 'triangle', 'square', or 'column'
         let guessMode = 'guess'; // 'guess', 'clear', or 'hide'
+        let customItems = []; // Store custom items
+        let savedCustomText = ''; // Store the textarea content
 
         // Sample emoji and word arrays
         const emojis = ['😀', '😂', '🥰', '😎', '🤔', '😴', '🎉', '🎈', '🌟', '⭐', '🌈', '🔥', '💎', '🎯', '🚀', '🎪', '🎨', '🎭', '🎪', '🎲'];
@@ -527,6 +683,288 @@
                     // 'normal' case - no additional styling needed
                 }
             }
+        }
+
+        function generateCustomContent() {
+            if (customItems.length === 0) {
+                numberDisplay.innerHTML = '<p style="color: red;">Please add custom items using the Custom button.</p>';
+                return;
+            }
+
+            // Clear previous content
+            numberDisplay.innerHTML = '';
+            
+            // Reset guess mode when generating new content
+            guessMode = 'guess';
+            guessToggleButton.textContent = 'Guess';
+
+            // Force column layout for custom items
+            const originalLayout = currentLayout;
+            currentLayout = 'column';
+            
+            // Calculate the maximum width needed
+            let maxWidth = 0;
+            const tempSpan = document.createElement('span');
+            tempSpan.style.visibility = 'hidden';
+            tempSpan.style.position = 'absolute';
+            tempSpan.style.fontSize = '24px';
+            tempSpan.style.fontWeight = 'bold';
+            tempSpan.style.padding = '10px 15px';
+            document.body.appendChild(tempSpan);
+            
+            customItems.forEach(item => {
+                tempSpan.textContent = item;
+                maxWidth = Math.max(maxWidth, tempSpan.offsetWidth);
+            });
+            
+            document.body.removeChild(tempSpan);
+            
+            // Ensure minimum width
+            maxWidth = Math.max(maxWidth, 120);
+
+            // Create rows for custom items
+            customItems.forEach((item, index) => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'number-row column-layout';
+
+                const rowLabel = document.createElement('div');
+                rowLabel.className = 'row-label';
+                rowLabel.textContent = `Item ${index + 1}:`;
+                rowDiv.appendChild(rowLabel);
+
+                const numbersDiv = document.createElement('div');
+                numbersDiv.className = 'numbers column-layout';
+
+                const containerDiv = document.createElement('div');
+                containerDiv.className = 'number-container column-layout';
+
+                const numberSpan = document.createElement('span');
+                numberSpan.className = 'number';
+                numberSpan.textContent = item;
+                numberSpan.style.minWidth = maxWidth + 'px';
+                numberSpan.style.width = 'auto';
+
+                // Apply random styling if enabled
+                if (styledCheckbox.checked) {
+                    applyRandomStyling(numberSpan);
+                }
+
+                // Add click event for individual masking/unmasking
+                numberSpan.addEventListener('click', function() {
+                    this.classList.toggle('masked');
+                });
+
+                containerDiv.appendChild(numberSpan);
+                numbersDiv.appendChild(containerDiv);
+                rowDiv.appendChild(numbersDiv);
+                numberDisplay.appendChild(rowDiv);
+            });
+            
+            // Restore original layout setting
+            currentLayout = originalLayout;
+        }
+
+        function openCustomModal() {
+            // Load default examples if textarea is empty and no saved content
+            if (!customTextarea.value.trim()) {
+                const defaultExamples = [
+                    // IP Addresses
+                    '192.168.1.1',
+                    '10.0.0.1',
+                    '172.16.0.1',
+                    // Phone Numbers
+                    '(555) 123-4567',
+                    '(800) 555-0199',
+                    '(212) 867-5309',
+                    // Credit Card Numbers (fake/test numbers)
+                    '4532 1234 5678 9012',
+                    '5555 5555 5555 4444',
+                    '3782 822463 10005'
+                ];
+                customTextarea.value = defaultExamples.join('\n');
+            }
+            customModal.style.display = 'block';
+        }
+
+        function preloadAllItems() {
+            const useNumbers = numbersCheckbox.checked;
+            const useEmojis = emojisCheckbox.checked;
+            const useWords = wordsCheckbox.checked;
+            
+            let allItems = [];
+            
+            if (useNumbers) {
+                // Add some sample numbers
+                for (let i = 0; i < 10; i++) {
+                    allItems.push(Math.floor(Math.random() * 10000).toString());
+                }
+            }
+            
+            if (useEmojis) {
+                allItems = allItems.concat(emojis);
+            }
+            
+            if (useWords) {
+                allItems = allItems.concat(words);
+            }
+            
+            if (allItems.length === 0) {
+                // If no categories selected, add comprehensive U.S.-based examples
+                const defaultItems = [
+                    // 10 U.S. IP Addresses
+                    '234.18.57.188',
+                    '192.168.79.95',
+                    '10.250.80.19',
+                    '10.1.97.101',
+                    '172.16.0.1',
+                    '172.31.255.254',
+                    '169.254.1.24',
+                    '127.0.0.1',
+                    '192.168.254.254',
+                    '84.14.32.87',
+                    
+                    // 10 U.S. Phone Numbers
+                    '(555) 123-4567',
+                    '(800) 642-0199',
+                    '(212) 867-5309',
+                    '(310) 588-0123',
+                    '(713) 215-7890',
+                    '(404) 783-1234',
+                    '(617) 941-9876',
+                    '(702) 882-5555',
+                    '(305) 364-4321',
+                    '(206) 050-8888',
+                    
+                    // 10 Credit Card Numbers (test/fake numbers)
+                    '4532-1234-5678-9012',
+                    '4131-1711-8900-3411',
+                    '4064-2451-3817-0102',
+                    '5567-5111-8432-4744',
+                    '5105-1051-0510-5100',
+                    '5200-8282-8282-8210',
+                    '3782-8224-6318-0054',
+                    '3714-4963-5398-4315',
+                    '3787-3449-3671-0010',
+                    '6011-7171-1341-1117'
+                ];
+                allItems = defaultItems;
+            }
+            
+            customTextarea.value = allItems.join('\n');
+        }
+
+        function clearTextarea() {
+            customTextarea.value = '';
+        }
+
+        // Draggable modal functionality
+        let isDragging = false;
+        let currentX = 0;
+        let currentY = 0;
+        let initialX = 0;
+        let initialY = 0;
+        let xOffset = 0;
+        let yOffset = 0;
+        let modalContent;
+
+        function dragStart(e) {
+            // Don't start drag if clicking on the close button
+            if (e.target.classList.contains('close')) {
+                return;
+            }
+            
+            modalContent = customModal.querySelector('.modal-content');
+            
+            if (e.type === "touchstart") {
+                initialX = e.touches[0].clientX - xOffset;
+                initialY = e.touches[0].clientY - yOffset;
+            } else {
+                initialX = e.clientX - xOffset;
+                initialY = e.clientY - yOffset;
+            }
+
+            // Check if the click is within the modal drag area
+            if (e.target === modalDragArea || 
+                modalDragArea.contains(e.target) ||
+                (e.target === modalHeader || modalHeader.contains(e.target))) {
+                isDragging = true;
+                e.preventDefault(); // Prevent text selection
+                modalDragArea.style.cursor = 'grabbing';
+            }
+        }
+
+        function dragEnd(e) {
+            if (isDragging) {
+                initialX = currentX;
+                initialY = currentY;
+                modalDragArea.style.cursor = 'move';
+            }
+            isDragging = false;
+        }
+
+        function drag(e) {
+            if (isDragging && modalContent) {
+                e.preventDefault();
+                
+                if (e.type === "touchmove") {
+                    currentX = e.touches[0].clientX - initialX;
+                    currentY = e.touches[0].clientY - initialY;
+                } else {
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+                }
+
+                xOffset = currentX;
+                yOffset = currentY;
+
+                modalContent.style.transform = `translate(${currentX}px, ${currentY}px)`;
+            }
+        }
+
+        function closeCustomModal() {
+            customModal.style.display = 'none';
+            // Reset modal position
+            modalContent = customModal.querySelector('.modal-content');
+            modalContent.style.transform = 'translate(0px, 0px)';
+            xOffset = 0;
+            yOffset = 0;
+            currentX = 0;
+            currentY = 0;
+            initialX = 0;
+            initialY = 0;
+            modalDragArea.style.cursor = 'move';
+        }
+
+        function applyCustomItems() {
+            const text = customTextarea.value.trim();
+            
+            if (!text) {
+                alert('Please enter some items in the text area.');
+                return;
+            }
+            
+            // Save the textarea content
+            savedCustomText = text;
+            
+            // Save settings to localStorage
+            saveSettings();
+            
+            // Split text into lines and filter out empty lines
+            let items = text.split('\n').filter(line => line.trim() !== '');
+            
+            // Remove duplicates if needed
+            items = [...new Set(items.map(item => item.trim()))];
+            
+            // Randomize if checkbox is checked
+            if (randomizeCheckbox.checked) {
+                items = items.sort(() => Math.random() - 0.5);
+            }
+            
+            customItems = items;
+            closeCustomModal();
+            
+            // Generate the custom content
+            generateCustomContent();
         }
 
         function generateContent() {
@@ -658,6 +1096,10 @@
                 input.className = 'guess-input';
                 input.placeholder = '';
                 
+                // Set the input width to match the number span width
+                const spanWidth = numberSpan.offsetWidth;
+                input.style.width = spanWidth + 'px';
+                
                 // Add input event listener to check for match and update percentage
                 input.addEventListener('input', function() {
                     const originalText = numberSpan.textContent.trim();
@@ -751,7 +1193,9 @@
                 numbers: numbersCheckbox.checked,
                 emojis: emojisCheckbox.checked,
                 words: wordsCheckbox.checked,
-                layout: currentLayout
+                layout: currentLayout,
+                customText: customTextarea.value,
+                randomize: randomizeCheckbox.checked
             };
             localStorage.setItem('memoryTrainingSettings', JSON.stringify(settings));
         }
@@ -789,6 +1233,13 @@
                             layoutToggleButton.innerHTML = '<span style="color: white;">|</span>';
                         }
                     }
+                    if (settings.customText) {
+                        savedCustomText = settings.customText;
+                        customTextarea.value = settings.customText;
+                    }
+                    if (settings.randomize !== undefined) {
+                        randomizeCheckbox.checked = settings.randomize;
+                    }
                 } catch (error) {
                     console.error('Error loading settings:', error);
                 }
@@ -801,8 +1252,31 @@
             saveSettings();
         });
         generateButton.addEventListener('click', generateContent);
+        customButton.addEventListener('click', openCustomModal);
         maskToggleButton.addEventListener('click', toggleAllMasks);
         guessToggleButton.addEventListener('click', toggleGuessMode);
+        
+        // Custom modal event listeners
+        closeModal.addEventListener('click', closeCustomModal);
+        cancelCustomButton.addEventListener('click', closeCustomModal);
+        applyCustomButton.addEventListener('click', applyCustomItems);
+        preloadButton.addEventListener('click', preloadAllItems);
+        clearButton.addEventListener('click', clearTextarea);
+        
+        // Draggable modal event listeners
+        modalDragArea.addEventListener('mousedown', dragStart);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', dragEnd);
+        modalDragArea.addEventListener('touchstart', dragStart);
+        document.addEventListener('touchmove', drag);
+        document.addEventListener('touchend', dragEnd);
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && customModal.style.display === 'block') {
+                closeCustomModal();
+            }
+        });
         
         // Save settings when checkboxes or dropdown change
         rowCountSelect.addEventListener('change', saveSettings);
@@ -810,6 +1284,8 @@
         numbersCheckbox.addEventListener('change', saveSettings);
         emojisCheckbox.addEventListener('change', saveSettings);
         wordsCheckbox.addEventListener('change', saveSettings);
+        randomizeCheckbox.addEventListener('change', saveSettings);
+        customTextarea.addEventListener('input', saveSettings);
         
         darkModeToggle.addEventListener('change', () => {
             document.body.classList.toggle('dark-mode');
