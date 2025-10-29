@@ -784,6 +784,12 @@
         loadSettings();
 
         // Don't generate initial content - wait for user to click Generate
+        // Set focus to the Generate button on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            if (generateButton) {
+                generateButton.focus();
+            }
+        });
     </script>
 </body>
 </html>
