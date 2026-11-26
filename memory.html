@@ -174,51 +174,63 @@
             position: absolute;
             top: 20px;
             right: 90px;
-        }
-        .toggle-switch input {
-            display: none;
-        }
-        .toggle-switch label {
-            cursor: pointer;
+            display: inline-block;
             width: 50px;
             height: 25px;
-            background: #ccc;
-            display: block;
+            background-color: #ccc;
             border-radius: 25px;
-            position: relative;
+            cursor: pointer;
         }
-        .toggle-switch label:after {
-            content: '';
+        .toggle-switch::before {
+            content: "";
             position: absolute;
             top: 2px;
             left: 2px;
             width: 21px;
             height: 21px;
-            background: #fff;
+            background-color: #fff;
             border-radius: 50%;
-            transition: 0.3s;
+            transition: transform 0.5s;
+            z-index: 1;
         }
-        .toggle-switch input:checked + label {
-            background: #5555ff;
+        .toggle-switch.active {
+            background-color: #5555ff;
         }
-        .toggle-switch input:checked + label:after {
-            left: calc(100% - 2px);
-            transform: translateX(-100%);
+        .toggle-switch.active::before {
+            transform: translateX(25px);
         }
+        .toggle-switch .mode-icon {
+            position: absolute;
+            top: 50%;
+            z-index: 0;
+            width: 12px;
+            height: 12px;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+        .toggle-switch .sun { right: 6px; color: #ffd75e; }
+        .toggle-switch .moon { left: 6px; color: #ffffff; }
+        .toggle-switch:focus-visible { outline: 2px solid #5555ff; outline-offset: 2px; }
         .help-btn {
             position: absolute;
             top: 20px;
             right: 20px;
+            width: 37.95px;
+            height: 25px;
+            padding: 0;
+            box-sizing: border-box;
             background-color: #007bff;
             color: white;
             border: none;
-            padding: 10px 20px;
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
+            font-weight: bold;
             transition: background-color 0.3s;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         .help-btn:hover {
             background-color: #0056b3;
@@ -495,9 +507,9 @@
     </style>
 </head>
 <body>
-    <div class="toggle-switch">
-        <input type="checkbox" id="dark-mode-toggle">
-        <label for="dark-mode-toggle"></label>
+    <div id="dark-mode-toggle" class="toggle-switch" role="switch" aria-checked="false" aria-label="Dark mode" tabindex="0">
+        <svg class="mode-icon sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="currentColor"/><g stroke="currentColor" stroke-width="1.1" stroke-linecap="round"><path d="M8 1.4v1.4M8 13.2v1.4M1.4 8h1.4M13.2 8h1.4M3.1 3.1l1 1M11.9 11.9l1 1M12.9 3.1l-1 1M4.1 11.9l-1 1"/></g></svg>
+        <svg class="mode-icon moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.4 9.7A5.7 5.7 0 0 1 6.3 2.6a5.8 5.8 0 1 0 7.1 7.1z" fill="currentColor"/></svg>
     </div>
     <a href="help.html" class="help-btn" title="Help Documentation" aria-label="Help Documentation">?</a>
     <div class="hidden-title"><center><h1>Memory Training</h1></center></div>
@@ -1287,15 +1299,27 @@
         randomizeCheckbox.addEventListener('change', saveSettings);
         customTextarea.addEventListener('input', saveSettings);
         
-        darkModeToggle.addEventListener('change', () => {
-            document.body.classList.toggle('dark-mode');
+        function applyToggleState(dark) {
+            document.body.classList.toggle('dark-mode', dark);
+            darkModeToggle.classList.toggle('active', dark);
+            darkModeToggle.setAttribute('aria-checked', dark ? 'true' : 'false');
+        }
+
+        darkModeToggle.addEventListener('click', () => {
+            applyToggleState(!document.body.classList.contains('dark-mode'));
             localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
         });
-        
+
+        darkModeToggle.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                darkModeToggle.click();
+            }
+        });
+
         // Apply saved dark mode preference on page load
         if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark-mode');
-            darkModeToggle.checked = true;
+            applyToggleState(true);
         }
 
         // Load saved settings on page load
